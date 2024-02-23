@@ -23,32 +23,13 @@ const offset = {
 
 let last = ''
 
-const collisionsMap = []
-const boundaries = []
-
-collisionsMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-        if (symbol == 55793){
-            boundaries.push(
-                new Boundary({position:{x: j*Boundary.width + offset.x + 37, y: i*Boundary.height + offset.y + 35}})
-            )
-        }
-    })
-})
-
-for (let i = 0; i <collisions.length;  i+= 180){
-    collisionsMap.push(collisions.slice(i, 180+i))
-}
-
-const movables = [background, ...boundaries]     // place chaque elt de boundaries dans la liste
-
 class Boundary{
-    static width = 44
-    static height = 44
+    static width = 32*1.4
+    static height = 32*1.4  //44
     constructor({position}){
         this.position = position
-        this.width = 44
-        this.height = 44
+        this.width = 32*1.4
+        this.height = 32*1.4
     }
     draw(){
         c.fillStyle = 'red'
@@ -71,9 +52,26 @@ class Sprite{
     }
 }
 
+const collisionsMap = []
+const boundaries = []
+
+for (let i = 0; i <collisions.length;  i+= 180){
+    collisionsMap.push(collisions.slice(i, 180+i))
+}
+
+collisionsMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+        if (symbol == 55793){
+            boundaries.push(
+                new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}})
+            )
+        }
+    })
+})
 
 const background = new Sprite({position: {x: offset.x, y: offset.y}, image })
 const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, image: playerImg, frames:{max:4}})
+const movables = [background, ...boundaries]     // place chaque elt de boundaries dans la liste
 
 function TestCollision({o1, o2}){
     return (o1.position.x + o1.width >= o2.position.x &&    //coté gauche
@@ -87,18 +85,63 @@ function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
-    boundaries.forEach(boundary => {
-        boundary.draw()
-    })
+    let moving = true
     if (keys.z.pressed && last == 'z'){
         for (let i = 0; i < boundaries.length; i++){
             const boundary = boundaries[i]
-            if (TestCollision({o1 : player, o2 : {...boundary}}))
+            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y +4}}})){
+                moving = false
+                break
+            }
+        }
+        if (moving){
+            movables.forEach(movable => {
+                movable.position.y += 4
+            })
         }
     }
-    else if (keys.q.pressed && last == 'q') background.position.x+= 4
-    else if (keys.s.pressed && last == 's') background.position.y -= 4
-    else if (keys.d.pressed && last == 'd') background.position.x -= 4
+    else if (keys.q.pressed && last == 'q'){
+        for (let i = 0; i < boundaries.length; i++){
+        const boundary = boundaries[i]
+        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x+4, y: boundary.position.y}}})){
+            moving = false
+            break
+        }
+        }
+    if (moving){
+        movables.forEach(movable => {
+            movable.position.x += 4
+        })
+    }
+    }
+    else if (keys.s.pressed && last == 's'){
+        for (let i = 0; i < boundaries.length; i++){
+        const boundary = boundaries[i]
+        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y - 4}}})){
+            moving = false
+            break
+        }
+        }
+    if (moving){
+        movables.forEach(movable => {
+            movable.position.y -= 4
+        })
+    }
+    }
+    else if (keys.d.pressed && last == 'd'){
+        for (let i = 0; i < boundaries.length; i++){
+            const boundary = boundaries[i]
+            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x-4, y: boundary.position.y}}})){
+                moving = false
+                break
+            }
+        }
+        if (moving){
+            movables.forEach(movable => {
+                movable.position.x -= 4
+            })
+        }
+    }
 }
 animate()
 
