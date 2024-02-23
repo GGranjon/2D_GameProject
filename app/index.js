@@ -1,13 +1,15 @@
 const canvas = document.querySelector('canvas')
-canvas.width  = 1224
-canvas.height = 620
+canvas.width  = window.innerWidth //1824
+canvas.height = window.innerHeight //820
 
 const c = canvas.getContext('2d')
 
-const image = new Image()
+const backgroundImg = new Image()
 const playerImg = new Image()
+const foregroundImg = new Image()
 playerImg.src = './img/playerDown.png'
-image.src = './img/LimSizeMapC3.png'
+backgroundImg.src = './img/LimSizeMapC3.png'
+foregroundImg.src = './img/foreground.png'
 
 const keys = {
     z: {pressed : false},
@@ -37,10 +39,11 @@ class Boundary{
     }
 }
 class Sprite{
-    constructor({position, image, frames = {max : 1}}){
+    constructor({position, image, velocity, frames = {max : 1}}){
         this.position = position
         this.image = image
         this.frames = frames
+        this.velocity = velocity
         this.image.onload = () => {
             this.width = this.image.width/this.frames.max
             this.height = this.image.height 
@@ -69,9 +72,10 @@ collisionsMap.forEach((row, i) => {
     })
 })
 
-const background = new Sprite({position: {x: offset.x, y: offset.y}, image })
-const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, image: playerImg, frames:{max:4}})
-const movables = [background, ...boundaries]     // place chaque elt de boundaries dans la liste
+const background = new Sprite({position: {x: offset.x, y: offset.y}, image : backgroundImg })
+const foreground = new Sprite({position:{x: offset.x, y: offset.y}, image : foregroundImg})
+const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 5, image: playerImg, frames:{max:4}})
+const movables = [background, ...boundaries, foreground]     // place chaque elt de boundaries dans la liste
 
 function TestCollision({o1, o2}){
     return (o1.position.x + o1.width >= o2.position.x &&    //coté gauche
@@ -85,60 +89,61 @@ function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
+    foreground.draw()
     let moving = true
     if (keys.z.pressed && last == 'z'){
         for (let i = 0; i < boundaries.length; i++){
             const boundary = boundaries[i]
-            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y +4}}})){
+            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y +player.velocity}}})){
                 moving = false
                 break
             }
         }
         if (moving){
             movables.forEach(movable => {
-                movable.position.y += 4
+                movable.position.y += player.velocity
             })
         }
     }
     else if (keys.q.pressed && last == 'q'){
         for (let i = 0; i < boundaries.length; i++){
         const boundary = boundaries[i]
-        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x+4, y: boundary.position.y}}})){
+        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x+player.velocity, y: boundary.position.y}}})){
             moving = false
             break
         }
         }
     if (moving){
         movables.forEach(movable => {
-            movable.position.x += 4
+            movable.position.x += player.velocity
         })
     }
     }
     else if (keys.s.pressed && last == 's'){
         for (let i = 0; i < boundaries.length; i++){
         const boundary = boundaries[i]
-        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y - 4}}})){
+        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x, y: boundary.position.y - player.velocity}}})){
             moving = false
             break
         }
         }
     if (moving){
         movables.forEach(movable => {
-            movable.position.y -= 4
+            movable.position.y -= player.velocity
         })
     }
     }
     else if (keys.d.pressed && last == 'd'){
         for (let i = 0; i < boundaries.length; i++){
             const boundary = boundaries[i]
-            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x-4, y: boundary.position.y}}})){
+            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x - player.velocity, y: boundary.position.y}}})){
                 moving = false
                 break
             }
         }
         if (moving){
             movables.forEach(movable => {
-                movable.position.x -= 4
+                movable.position.x -= player.velocity
             })
         }
     }
