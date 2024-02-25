@@ -2,6 +2,4 @@ app/node_modules/
 
 app/out/make/
 
-app/out/app-win32-x64/locales
-app/out/app-win32-x64/resources
-app/out/app-win32-x64/Squirrel.exe
+app/out/
