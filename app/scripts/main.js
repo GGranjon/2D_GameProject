@@ -6,12 +6,12 @@ const createWindow = () => {
       width: 900,
       height: 900,
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
+        preload: path.join(__dirname, 'scripts/preload.js')
       }
     })
     win.maximize()
     win.setFullScreen(true)
-    win.loadFile('index.html')
+    win.loadFile('./views/index.html')
     win.setMenuBarVisibility(false)
     win.scro
   }

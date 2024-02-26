@@ -5,7 +5,7 @@ body{
     margin:0;
 }
 
-#canvas_contain{
+.canvas_contain{
     text-align:center;
 }
 
