@@ -1,5 +1,5 @@
 // Array of audio file paths
-var songs = ["../audio/littleroot.mp3", "../audio/route101.mp3"];
+var songs = ["../data/audio/littleroot.mp3", "../data/audio/route101.mp3"];
 var audio;
 // Function to play songs sequentially
 function playSongs(index) {

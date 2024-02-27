@@ -4,31 +4,6 @@ canvas.height = window.innerHeight
 
 const c = canvas.getContext('2d')
 
-const backgroundImg = new Image()
-const foregroundImg = new Image()
-const playerDown = new Image()
-const playerUp = new Image()
-const playerLeft = new Image()
-const playerRight = new Image()
-const backgroundHome = new Image()
-const foregroundHome = new Image()
-
-playerDown.src = '../img/playerDown.png'
-playerUp.src = '../img/playerUp.png'
-playerLeft.src = '../img/playerLeft.png'
-playerRight.src = '../img/playerRight.png'
-backgroundImg.src = '../img/LimSizeMapC3.png'
-foregroundImg.src = '../img/foreground.png'
-backgroundHome.src = '../img/interieur_maison.png'
-foregroundHome.src = '../img/interieurMaisonForeground.png'
-
-function switchHtml(){
-    setTimeout(function() {
-        window.location.href = "index2.html";
-    }, 500);
-}
-
-
 const keys = {
     z: {pressed : false},
     q: {pressed : false},
@@ -40,10 +15,8 @@ const zoom = 1.4
 
 const offset = {
     x : -1260,
-    y : -1300
+    y : -1588
 }
-
-let last = ''
 
 class Boundary{
     static width = 32*zoom
@@ -102,18 +75,18 @@ class Sprite{
     }
 }
 
+let last = ''
+
 let collisionsMap = []
 let boundaries = []
-let transitionsMap = []
 let transitions = []
 
 const collisions_size = {"home": 49, "town": 180}
-const map_offsets = {"home": {x: -135, y:-850}, "town": {x: 1, y: 2}}
+const map_offsets = {"home": {x: -135, y:-850}, "town": {x : -1260,y : -1588}}
 
 function createBoundaries(obj, size, name){
     collisionsMap = []
     boundaries = []
-    transitionsMap = []
     transitions = []
     for (let i = 0; i <obj.length;  i+= size){
         collisionsMap.push(obj.slice(i, size+i))
@@ -126,7 +99,27 @@ function createBoundaries(obj, size, name){
                     new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"collision"})
                 )
             }
-            if (symbol == 2){
+            else if (symbol == 2){
+                transitions.push(
+                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"hopital"})
+                )
+            }
+            else if (symbol == 3){
+                transitions.push(
+                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"market"})
+                )
+            }
+            else if (symbol == 4){
+                transitions.push(
+                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"ecole"})
+                )
+            }
+            else if (symbol == 5){
+                transitions.push(
+                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"entreprise"})
+                )
+            }
+            else if (symbol == 6){
                 transitions.push(
                     new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"home"})
                 )
@@ -135,43 +128,9 @@ function createBoundaries(obj, size, name){
     })
 }
 
-for (let i = 0; i <collisions.length;  i+= 180){
-    collisionsMap.push(collisions.slice(i, 180+i))
-}
-
-collisionsMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-        if (symbol == 55793){
-            boundaries.push(
-                new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"collision"})
-            )
-        }
-        if (symbol == 2){
-            transitions.push(
-                new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"home"})
-            )
-        }
-    })
-})
-
-
-
-for (let i = 0; i <collisions_maison.length;  i+= 49){
-    transitionsMap.push(collisions_maison.slice(i, 49+i))
-}
-
-transitionsMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-        if (symbol == 2){
-            transitions.push(
-                new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}})
-            )
-        }
-    })
-})
-
-const background = new Sprite({position: {x: offset.x, y: offset.y}, image : backgroundImg })
-const foreground = new Sprite({position:{x: offset.x, y: offset.y}, image : foregroundImg})
+createBoundaries(collisions_town, collisions_size.town, "town")
+const background = new Sprite({position: {x : map_offsets.town.x, y : map_offsets.town.y}, image : backgroundImg })
+const foreground = new Sprite({position:{x: map_offsets.town.x, y: map_offsets.town.y}, image : foregroundImg})
 const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 7, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
 let movables = [background, ...boundaries, foreground, ...transitions]    // ce qui doit bouger quand le joueur se déplace
 
@@ -199,33 +158,29 @@ function checkCollisionLeft(obj){
     }
 }
 
+function blocSwitchScene(where){
+    background.image = backgroundHome
+    foreground.image = foregroundHome
+    let newPosition = {x: map_offsets[where].x, y: map_offsets[where].y}
+    background.position.x = newPosition.x
+    background.position.y = newPosition.y
+    foreground.position.x = newPosition.x
+    foreground.position.y = newPosition.y
+    createBoundaries(collisions_maison, collisions_size[where], where)
+    movables = [background, ...boundaries, foreground, ...transitions]  //update the movables bcs the boundaries change
+}
+
 function switchScene(type){
     switch (type){
         case "home":
-            background.image = backgroundHome
-            foreground.image = foregroundHome
-            const newPosition = {x: -135, y:-850}
-            background.position = newPosition
-            foreground.position = newPosition
-            createBoundaries(collisions_maison, collisions_size.home, "home")
-            movables = [background, ...boundaries, foreground, ...transitions]
-
-            //the following comes from my 'resize window' code, idk exactly why but this solves a problem of the scene going 2x faster than the collisions after a transition
-            canvas.width  = window.innerWidth
-            canvas.height = window.innerHeight
-            let oldx = player.position.x
-            let oldy = player.position.y
-            let newx = canvas.width/2 - 192/8
-            let newy = canvas.height/2 - 68/8
-            let dx = newx - oldx
-            let dy = newy - oldy
-            background.updatePosition(dx, dy)
-            foreground.updatePosition(dx, dy)
-            boundaries.forEach(boundary => {
-                boundary.updatePosition(dx, dy)
-            })
-            player.updatePosition(dx, dy)
-
+            blocSwitchScene("home")
+            break
+        case "town":
+            blocSwitchScene("town")
+            break
+        case "hopital":
+            blocSwitchScene("hopital")
+            break
     }
 }
 
@@ -234,7 +189,7 @@ function animate(){
     background.draw()
     player.draw()
     show_object(transitions)
-    //show_object(boundaries)
+    show_object(boundaries)
     foreground.draw()
     player.moving = false
     if (keys.z.pressed && last == 'z'){
