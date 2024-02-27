@@ -3,3 +3,9 @@ app/node_modules/
 app/out/make/
 
 app/out/
+
+app/forge.config.js
+
+app/package.json
+
+app/package-lock.json
