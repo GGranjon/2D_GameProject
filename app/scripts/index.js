@@ -4,6 +4,11 @@ canvas.height = window.innerHeight
 
 const c = canvas.getContext('2d')
 
+const DfltSize = {x : 1920, y : 1080}
+let ScreenSize = {x: canvas.width, y: canvas.height}
+
+const ratio = {x : DfltSize.x / ScreenSize.x, y : DfltSize.y / ScreenSize.y}
+
 const keys = {
     z: {pressed : false},
     q: {pressed : false},
@@ -12,11 +17,6 @@ const keys = {
 }
 
 const zoom = 1.4
-
-const offset = {
-    x : -1260,
-    y : -1588
-}
 
 class Boundary{
     static width = 32*zoom
@@ -82,7 +82,7 @@ let boundaries = []
 let transitions = []
 
 const collisions_size = {"home": 49, "town": 180}
-const map_offsets = {"home": {x: -135, y:-850}, "town": {x : -1260,y : -1588}}
+const map_offsets = {"home": {x: -135*ratio.x, y:-850*ratio.y}, "town": {x : -1260*ratio.x,y : -1588*ratio.y}}
 
 function createBoundaries(obj, size, name){
     collisionsMap = []
@@ -96,32 +96,32 @@ function createBoundaries(obj, size, name){
         row.forEach((symbol, j) => {
             if (symbol == 55793){
                 boundaries.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"collision"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"collision"})
                 )
             }
             else if (symbol == 2){
                 transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"hopital"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"hopital"})
                 )
             }
             else if (symbol == 3){
                 transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"market"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"market"})
                 )
             }
             else if (symbol == 4){
                 transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"ecole"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"ecole"})
                 )
             }
             else if (symbol == 5){
                 transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"entreprise"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"entreprise"})
                 )
             }
             else if (symbol == 6){
                 transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + offset.x, y: i*Boundary.height + offset.y}, type:"home"})
+                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"home"})
                 )
             }
         })
@@ -184,12 +184,13 @@ function switchScene(type){
     }
 }
 
+
 function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
-    show_object(transitions)
-    show_object(boundaries)
+    //show_object(transitions)
+    //show_object(boundaries)
     foreground.draw()
     player.moving = false
     if (keys.z.pressed && last == 'z'){
