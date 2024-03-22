@@ -7,7 +7,7 @@ const c = canvas.getContext('2d')
 const DfltSize = {x : 1920, y : 1080}
 let ScreenSize = {x: canvas.width, y: canvas.height}
 
-const ratio = {x : DfltSize.x / ScreenSize.x, y : DfltSize.y / ScreenSize.y}
+const diffSize = {x : DfltSize.x - ScreenSize.x, y : DfltSize.y - ScreenSize.y}
 
 const keys = {
     z: {pressed : false},
@@ -17,6 +17,12 @@ const keys = {
 }
 
 const zoom = 1.4
+
+const infos = {
+'town': {background: backgroundTown, foreground: foregroundTown, collisions: collisions_town, collisions_size:180, last_pos: {x:0, y:0}},
+'home': {background: backgroundHome, foreground: foregroundHome, collisions: collisions_maison, collisions_size:49},
+'school': {background: backgroundSchool, foreground: foregroundSchool, collisions: collisions_school, collisions_size: 47}
+}
 
 class Boundary{
     static width = 32*zoom
@@ -81,10 +87,9 @@ let collisionsMap = []
 let boundaries = []
 let transitions = []
 
-const collisions_size = {"home": 49, "town": 180}
-const map_offsets = {"home": {x: -135*ratio.x, y:-850*ratio.y}, "town": {x : -1260*ratio.x,y : -1588*ratio.y}}
+const map_offsets = {"home": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}, "town": {x : -1260 - diffSize.x/2,y : -1588 - diffSize.y/2}, "school": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}}
 
-function createBoundaries(obj, size, name){
+function createBoundaries(obj, size, name, backintown){
     collisionsMap = []
     boundaries = []
     transitions = []
@@ -95,43 +100,97 @@ function createBoundaries(obj, size, name){
     collisionsMap.forEach((row, i) => {
         row.forEach((symbol, j) => {
             if (symbol == 55793){
+                if (!backintown){
                 boundaries.push(
                     new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"collision"})
                 )
+                }
+                else{
+                    boundaries.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"collision"})
+                    )
+                }
             }
             else if (symbol == 2){
-                transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"hopital"})
-                )
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"hopital"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"hopital"})
+                    )
+                }
             }
             else if (symbol == 3){
-                transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"market"})
-                )
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"market"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"market"})
+                    )
+                }
             }
             else if (symbol == 4){
-                transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"ecole"})
-                )
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"school"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"school"})
+                    )
+                }
             }
             else if (symbol == 5){
-                transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"entreprise"})
-                )
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"entreprise"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"entreprise"})
+                    )
+                }
             }
             else if (symbol == 6){
-                transitions.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height + map_offsets[name].y}, type:"home"})
-                )
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"home"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"home"})
+                    )
+                }
+            }
+            else if (symbol == 7){
+                if (!backintown){
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"town"})
+                    )
+                    }
+                else{
+                    transitions.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"town"})
+                    )
+                }
             }
         })
     })
 }
 
-createBoundaries(collisions_town, collisions_size.town, "town")
-const background = new Sprite({position: {x : map_offsets.town.x, y : map_offsets.town.y}, image : backgroundImg })
-const foreground = new Sprite({position:{x: map_offsets.town.x, y: map_offsets.town.y}, image : foregroundImg})
-const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 7, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
+createBoundaries(collisions_town, infos['town'].collisions_size, "town", false)
+const background = new Sprite({position: {x : map_offsets.town.x, y : map_offsets.town.y}, image : backgroundTown })
+const foreground = new Sprite({position:{x: map_offsets.town.x, y: map_offsets.town.y}, image : foregroundTown})
+const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 10, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
 let movables = [background, ...boundaries, foreground, ...transitions]    // ce qui doit bouger quand le joueur se déplace
 
 function TestCollision({o1, o2}){
@@ -159,38 +218,32 @@ function checkCollisionLeft(obj){
 }
 
 function blocSwitchScene(where){
-    background.image = backgroundHome
-    foreground.image = foregroundHome
-    let newPosition = {x: map_offsets[where].x, y: map_offsets[where].y}
+    if (where != "town"){
+        infos.town.last_pos.x = background.position.x
+        infos.town.last_pos.y = background.position.y
+        var newPosition = {x: map_offsets[where].x, y: map_offsets[where].y}
+        var backintown = false  //permet de bien placer le background lorsque l'on sort d'un batiment (qu'il ne soit pas comme à la position au lancement du jeu)
+    }
+    else{
+        var newPosition = {x: infos.town.last_pos.x, y: infos.town.last_pos.y}
+        var backintown = true
+    }
+    background.image = infos[where].background
+    foreground.image = infos[where].foreground
     background.position.x = newPosition.x
     background.position.y = newPosition.y
     foreground.position.x = newPosition.x
     foreground.position.y = newPosition.y
-    createBoundaries(collisions_maison, collisions_size[where], where)
+    createBoundaries(infos[where].collisions, infos[where].collisions_size, where, backintown)
     movables = [background, ...boundaries, foreground, ...transitions]  //update the movables bcs the boundaries change
 }
-
-function switchScene(type){
-    switch (type){
-        case "home":
-            blocSwitchScene("home")
-            break
-        case "town":
-            blocSwitchScene("town")
-            break
-        case "hopital":
-            blocSwitchScene("hopital")
-            break
-    }
-}
-
 
 function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
-    //show_object(transitions)
-    //show_object(boundaries)
+    show_object(transitions)
+    show_object(boundaries)
     foreground.draw()
     player.moving = false
     if (keys.z.pressed && last == 'z'){
@@ -208,7 +261,7 @@ function animate(){
             const transition = transitions[i]
             if (TestCollision({o1 : player, o2 : {...transition, position : {x: transition.position.x, y: transition.position.y + player.velocity}}})){
                 player.moving = false
-                switchScene(transition.type)
+                blocSwitchScene(transition.type)
                 break
             }
         }
@@ -222,13 +275,19 @@ function animate(){
     else if (keys.q.pressed && last == 'q'){
         player.image = player.sprites.left
         player.moving = true
-        checkCollisionLeft(boundaries)
+        for (let i = 0; i < boundaries.length; i++){
+            const boundary = boundaries[i]
+            if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x+player.velocity, y: boundary.position.y}}})){
+                player.moving = false
+                break
+            }
+        }
 
         for (let i = 0; i < transitions.length; i++){
             const transition = transitions[i]
             if (TestCollision({o1 : player, o2 : {...transition, position : {x: transition.position.x + player.velocity, y: transition.position.y}}})){
                 player.moving = false
-                switchScene(transition.type)
+                blocSwitchScene(transition.type)
                 break
             }
         }
@@ -253,7 +312,7 @@ function animate(){
             const transition = transitions[i]
             if (TestCollision({o1 : player, o2 : {...transition, position : {x: transition.position.x, y: transition.position.y - player.velocity}}})){
                 player.moving = false
-                switchScene(transition.type)
+                blocSwitchScene(transition.type)
                 break
             }
         }
@@ -279,7 +338,7 @@ function animate(){
             const transition = transitions[i]
             if (TestCollision({o1 : player, o2 : {...transition, position : {x: transition.position.x - player.velocity, y: transition.position.y}}})){
                 player.moving = false
-                switchScene(transition.type)
+                blocSwitchScene(transition.type)
                 break
             }
         }
@@ -316,12 +375,30 @@ window.addEventListener('resize', (e) => {
     let newy = canvas.height/2 - 68/8
     let dx = newx - oldx
     let dy = newy - oldy
+
+    //update position of each elements
     background.updatePosition(dx, dy)
     foreground.updatePosition(dx, dy)
     boundaries.forEach(boundary => {
         boundary.updatePosition(dx, dy)
     })
+    transitions.forEach(transition => {
+        transition.updatePosition(dx, dy)
+    })
     player.updatePosition(dx, dy)
+
+    //update offsets for transitions        //CURRENT PB : WHEN A RESIZE HAPPENS IN A BUILDING (PB WHEN GOING OUTSIDE)
+    DfltSize.x = ScreenSize.x
+    DfltSize.y = ScreenSize.y
+    ScreenSize.x = canvas.width
+    ScreenSize.y = canvas.height
+    diffSize.x = DfltSize.x - ScreenSize.x
+    diffSize.y = DfltSize.y - ScreenSize.y
+    for (elt in map_offsets){
+        map_offsets[elt].x -= diffSize.x/2
+        map_offsets[elt].y -= diffSize.y/2
+    }
+
 })
 
 window.addEventListener('keydown', (e) => {
