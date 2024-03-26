@@ -16,17 +16,18 @@ const keys = {
     d: {pressed : false}
 }
 
-const zoom = 1.4
+const zoom = 1.4    //image zoomé 140%
 
 const infos = {
 'town': {background: backgroundTown, foreground: foregroundTown, collisions: collisions_town, collisions_size:180, last_pos: {x:0, y:0}},
 'home': {background: backgroundHome, foreground: foregroundHome, collisions: collisions_maison, collisions_size:49},
-'school': {background: backgroundSchool, foreground: foregroundSchool, collisions: collisions_school, collisions_size: 47}
+'school': {background: backgroundSchool, foreground: foregroundSchool, collisions: collisions_school, collisions_size: 47},
+'company': {background: backgroundCompany, foreground: foregroundCompany, collisions: collisions_company, collisions_size: 43}
 }
 
 class Boundary{
     static width = 32*zoom
-    static height = 32*zoom  //image zoomé 140%
+    static height = 32*zoom
     constructor({position, type}){
         this.position = position
         this.width = 32*zoom
@@ -87,7 +88,7 @@ let collisionsMap = []
 let boundaries = []
 let transitions = []
 
-const map_offsets = {"home": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}, "town": {x : -1260 - diffSize.x/2,y : -1588 - diffSize.y/2}, "school": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}}
+const map_offsets = {"home": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}, "town": {x : -1260 - diffSize.x/2,y : -1588 - diffSize.y/2}, "school": {x: -95 - diffSize.x/2, y:-920 - diffSize.y/2}, "company": {x: -5 - diffSize.x/2, y:-1020 - diffSize.y/2}}
 
 function createBoundaries(obj, size, name, backintown){
     collisionsMap = []
@@ -150,12 +151,12 @@ function createBoundaries(obj, size, name, backintown){
             else if (symbol == 5){
                 if (!backintown){
                     transitions.push(
-                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"entreprise"})
+                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"company"})
                     )
                     }
                 else{
                     transitions.push(
-                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"entreprise"})
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"company"})
                     )
                 }
             }
@@ -190,7 +191,7 @@ function createBoundaries(obj, size, name, backintown){
 createBoundaries(collisions_town, infos['town'].collisions_size, "town", false)
 const background = new Sprite({position: {x : map_offsets.town.x, y : map_offsets.town.y}, image : backgroundTown })
 const foreground = new Sprite({position:{x: map_offsets.town.x, y: map_offsets.town.y}, image : foregroundTown})
-const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 10, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
+const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 8, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
 let movables = [background, ...boundaries, foreground, ...transitions]    // ce qui doit bouger quand le joueur se déplace
 
 function TestCollision({o1, o2}){
@@ -219,12 +220,14 @@ function checkCollisionLeft(obj){
 
 function blocSwitchScene(where){
     if (where != "town"){
+        player.velocity = 5
         infos.town.last_pos.x = background.position.x
         infos.town.last_pos.y = background.position.y
         var newPosition = {x: map_offsets[where].x, y: map_offsets[where].y}
         var backintown = false  //permet de bien placer le background lorsque l'on sort d'un batiment (qu'il ne soit pas comme à la position au lancement du jeu)
     }
     else{
+        player.velocity = 8
         var newPosition = {x: infos.town.last_pos.x, y: infos.town.last_pos.y}
         var backintown = true
     }
@@ -242,8 +245,8 @@ function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
-    show_object(transitions)
-    show_object(boundaries)
+    //show_object(transitions)
+    //show_object(boundaries)
     foreground.draw()
     player.moving = false
     if (keys.z.pressed && last == 'z'){
