@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motus Game</title>
+    <link rel="stylesheet" type="text/css" href="../styles/motus_style.css" />
+</head>
+<script src="../data/motus_data/dictionary.js"></script>
+<script src="../data/motus_data/dictionary2.js"></script>
+<script src = "../scripts/song.js"></script>
+<body>
+    <div id = "box">
+        <div id="text">
+            <h1 id=title>Motus Game</h1>
+            <p id=intro>Guess the english word !</p>
+            <p id="intro2">(Please note that some words are not in our database)</p>
+            <button id = "backButton">Leave</button>
+        </div>
+        <div id=container_game>
+            <div id="wordContainer">
+            </div>
+            <div id=result_box>
+                <p id=nonExistent>This word was not found, please try again</p>
+            </div>
+        </div>
+    </div>
+    <script src="../scripts/motus.js"></script>
+</body>
+
+</html>

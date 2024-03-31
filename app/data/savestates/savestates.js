@@ -1,0 +1,1 @@
+let savestate1 = {money:0, xp: 0, last_place: 'town', last_x_map: map_offsets.town.x, last_y_map: map_offsets.town.y}

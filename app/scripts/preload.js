@@ -1,3 +1,6 @@
+const { contextBridge, ipcRenderer } = require('electron');
+console.log('Preload script loaded');
+window.ipcRenderer = ipcRenderer;
 window.addEventListener('DOMContentLoaded', () => {
     const replaceText = (selector, text) => {
       const element = document.getElementById(selector)

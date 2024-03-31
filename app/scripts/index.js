@@ -1,30 +1,19 @@
-const canvas = document.querySelector('canvas')
-canvas.width  = window.innerWidth
-canvas.height = window.innerHeight
+let money = 0;
+let xp = 0;
+let current_place = "town"
+let x1 = map_offsets.town.x;
+let y1 = map_offsets.town.y;
 
-const c = canvas.getContext('2d')
-
-const DfltSize = {x : 1920, y : 1080}
-let ScreenSize = {x: canvas.width, y: canvas.height}
-
-const diffSize = {x : DfltSize.x - ScreenSize.x, y : DfltSize.y - ScreenSize.y}
-
-const keys = {
-    z: {pressed : false},
-    q: {pressed : false},
-    s: {pressed : false},
-    d: {pressed : false}
+const params = new URLSearchParams(window.location.search);
+if (params.size != 0){  //if i come from a minigame
+    money = parseInt(params.get('money'));
+    xp = parseInt(params.get("xp"));
+    x1 = parseInt(params.get("x"));
+    y1 = parseInt(params.get("y"));
+    current_place = params.get("place")
+    infos.town.last_pos.x = parseInt(params.get("last_posx"))
+    infos.town.last_pos.y = parseInt(params.get("last_posy"))
 }
-
-const zoom = 1.4    //image zoomé 140%
-
-const infos = {
-'town': {background: backgroundTown, foreground: foregroundTown, collisions: collisions_town, collisions_size:180, last_pos: {x:0, y:0}},
-'home': {background: backgroundHome, foreground: foregroundHome, collisions: collisions_maison, collisions_size:49},
-'school': {background: backgroundSchool, foreground: foregroundSchool, collisions: collisions_school, collisions_size: 47},
-'company': {background: backgroundCompany, foreground: foregroundCompany, collisions: collisions_company, collisions_size: 43}
-}
-
 class Boundary{
     static width = 32*zoom
     static height = 32*zoom
@@ -37,9 +26,13 @@ class Boundary{
 
     draw(){
         if (this.type == "collision"){
-        c.fillStyle = 'red'
-        c.fillRect(this.position.x, this.position.y, this.width, this.height)}
+            c.fillStyle = 'red'
+            c.fillRect(this.position.x, this.position.y, this.width, this.height)}
 
+        else if (this.type == "motus" || this.type == "petit_bac"){
+            c.fillStyle = 'blue'
+            c.fillRect(this.position.x, this.position.y, this.width, this.height) 
+        }
         else{
             c.fillStyle = 'green'
             c.fillRect(this.position.x, this.position.y, this.width, this.height) 
@@ -87,13 +80,13 @@ let last = ''
 let collisionsMap = []
 let boundaries = []
 let transitions = []
+let minigames = []
 
-const map_offsets = {"home": {x: -135 - diffSize.x/2, y:-850 - diffSize.y/2}, "town": {x : -1260 - diffSize.x/2,y : -1588 - diffSize.y/2}, "school": {x: -95 - diffSize.x/2, y:-920 - diffSize.y/2}, "company": {x: -5 - diffSize.x/2, y:-1020 - diffSize.y/2}}
-
-function createBoundaries(obj, size, name, backintown){
+function createBoundaries(obj, size, name, backintown, positionx, positiony){
     collisionsMap = []
     boundaries = []
     transitions = []
+    minigames = []
     for (let i = 0; i <obj.length;  i+= size){
         collisionsMap.push(obj.slice(i, size+i))
     }
@@ -102,20 +95,23 @@ function createBoundaries(obj, size, name, backintown){
         row.forEach((symbol, j) => {
             if (symbol == 55793){
                 if (!backintown){
-                boundaries.push(
-                    new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"collision"})
-                )
+                    console.log(positionx, positiony)
+                    boundaries.push(
+                        new Boundary({position:{x: j*Boundary.width + positionx, y: i*Boundary.height +  positiony}, type:"collision"})
+                    )
                 }
                 else{
+                    console.log("position x du bloc : ",infos.town.last_pos.x, " et position y : ", infos.town.last_pos.y)
+                    console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                     boundaries.push(
-                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"collision"})
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height + infos.town.last_pos.y}, type:"collision"})
                     )
                 }
             }
             else if (symbol == 2){
                 if (!backintown){
                     transitions.push(
-                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"hopital"})
+                        new Boundary({position:{x: j*Boundary.width + positionx, y: i*Boundary.height +  positiony}, type:"hopital"})
                     )
                     }
                 else{
@@ -127,7 +123,7 @@ function createBoundaries(obj, size, name, backintown){
             else if (symbol == 3){
                 if (!backintown){
                     transitions.push(
-                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"market"})
+                        new Boundary({position:{x: j*Boundary.width + positionx, y: i*Boundary.height +  positiony}, type:"market"})
                     )
                     }
                 else{
@@ -175,7 +171,7 @@ function createBoundaries(obj, size, name, backintown){
             else if (symbol == 7){
                 if (!backintown){
                     transitions.push(
-                        new Boundary({position:{x: j*Boundary.width + map_offsets[name].x, y: i*Boundary.height +  map_offsets[name].y}, type:"town"})
+                        new Boundary({position:{x: j*Boundary.width + positionx, y: i*Boundary.height +  positiony}, type:"town"})
                     )
                     }
                 else{
@@ -184,15 +180,38 @@ function createBoundaries(obj, size, name, backintown){
                     )
                 }
             }
+            else if (symbol == 42){
+                if (!backintown){
+                    minigames.push(
+                        new Boundary({position:{x: j*Boundary.width + positionx, y: i*Boundary.height +  positiony}, type:"motus"})
+                    )
+                    }
+                else{
+                    minigames.push(
+                        new Boundary({position:{x: j*Boundary.width + infos.town.last_pos.x, y: i*Boundary.height +  infos.town.last_pos.y}, type:"motus"})
+                    )
+                }
+            }
         })
     })
 }
+let background;
+let foreground;
+let player;
+if (params.size != 0){
+    createBoundaries(infos[current_place].collisions, infos[current_place].collisions_size, current_place, false, map_offsets[current_place].board.x, map_offsets[current_place].board.y)
+    background = new Sprite({position: {x : map_offsets[current_place].board.x, y : map_offsets[current_place].board.y}, image : infos[current_place].background })
+    foreground = new Sprite({position:{x: map_offsets[current_place].board.x, y: map_offsets[current_place].board.y}, image : infos[current_place].foreground})
+    player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 5, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
+}
+else{
+    createBoundaries(infos[current_place].collisions, infos[current_place].collisions_size, current_place, false, map_offsets[current_place].x, map_offsets[current_place].y)
+    background = new Sprite({position: {x : map_offsets[current_place].x, y : map_offsets[current_place].y}, image : infos[current_place].background })
+    foreground = new Sprite({position:{x: map_offsets[current_place].x, y: map_offsets[current_place].y}, image : infos[current_place].foreground})
+    player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 8, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
+}
 
-createBoundaries(collisions_town, infos['town'].collisions_size, "town", false)
-const background = new Sprite({position: {x : map_offsets.town.x, y : map_offsets.town.y}, image : backgroundTown })
-const foreground = new Sprite({position:{x: map_offsets.town.x, y: map_offsets.town.y}, image : foregroundTown})
-const player = new Sprite({position: {x: canvas.width/2 - 192/8, y: canvas.height/2 - 68/8}, velocity : 8, image: playerDown, frames:{max:4}, sprites: {up : playerUp, down: playerDown, left : playerLeft, right : playerRight}})
-let movables = [background, ...boundaries, foreground, ...transitions]    // ce qui doit bouger quand le joueur se déplace
+let movables = [background, ...boundaries, foreground, ...transitions, ...minigames]    // ce qui doit bouger quand le joueur se déplace
 
 function TestCollision({o1, o2}){
     return (o1.position.x + o1.width >= o2.position.x &&    //coté gauche
@@ -208,18 +227,9 @@ function show_object(obj){
     })
 }
 
-function checkCollisionLeft(obj){
-    for (let i = 0; i < obj.length; i++){
-        const boundary = obj[i]
-        if (TestCollision({o1 : player, o2 : {...boundary, position : {x: boundary.position.x+player.velocity, y: boundary.position.y}}})){
-            player.moving = false
-            break
-        }
-    }
-}
-
 function blocSwitchScene(where){
     if (where != "town"){
+        console.log("je pense que je ne vais pas a town")
         player.velocity = 5
         infos.town.last_pos.x = background.position.x
         infos.town.last_pos.y = background.position.y
@@ -227,26 +237,38 @@ function blocSwitchScene(where){
         var backintown = false  //permet de bien placer le background lorsque l'on sort d'un batiment (qu'il ne soit pas comme à la position au lancement du jeu)
     }
     else{
+        console.log("je reconnais que je vais a town")
         player.velocity = 8
         var newPosition = {x: infos.town.last_pos.x, y: infos.town.last_pos.y}
         var backintown = true
     }
+    current_place = where
+    positionx = newPosition.x
+    positiony = newPosition.y
+    console.log("nouvelle position du background : ", newPosition.x)
+    console.log("je vais a ", where)
     background.image = infos[where].background
     foreground.image = infos[where].foreground
     background.position.x = newPosition.x
     background.position.y = newPosition.y
     foreground.position.x = newPosition.x
     foreground.position.y = newPosition.y
-    createBoundaries(infos[where].collisions, infos[where].collisions_size, where, backintown)
-    movables = [background, ...boundaries, foreground, ...transitions]  //update the movables bcs the boundaries change
+    createBoundaries(infos[where].collisions, infos[where].collisions_size, where, backintown, positionx, positiony)
+    movables = [background, ...boundaries, foreground, ...transitions, ...minigames]  //update the movables bcs the boundaries change
 }
+
+setTimeout(function() {
+    playSongs(0, main_songs); // Start playing from the first song
+}, 500); // Adjust the delay time as needed (in milliseconds)
 
 function animate(){
     window.requestAnimationFrame(animate)
     background.draw()
     player.draw()
-    //show_object(transitions)
-    //show_object(boundaries)
+    console.log("position background x: ",background.position.x, " et y: ", background.position.y)
+    show_object(transitions)
+    show_object(boundaries)
+    show_object(minigames)
     foreground.draw()
     player.moving = false
     if (keys.z.pressed && last == 'z'){
@@ -383,10 +405,10 @@ window.addEventListener('resize', (e) => {
     background.updatePosition(dx, dy)
     foreground.updatePosition(dx, dy)
     boundaries.forEach(boundary => {
-        boundary.updatePosition(dx, dy)
+    boundary.updatePosition(dx, dy)
     })
     transitions.forEach(transition => {
-        transition.updatePosition(dx, dy)
+    transition.updatePosition(dx, dy)
     })
     player.updatePosition(dx, dy)
 
@@ -401,7 +423,6 @@ window.addEventListener('resize', (e) => {
         map_offsets[elt].x -= diffSize.x/2
         map_offsets[elt].y -= diffSize.y/2
     }
-
 })
 
 window.addEventListener('keydown', (e) => {
@@ -426,6 +447,15 @@ window.addEventListener('keydown', (e) => {
             keys.d.pressed = true
             last = 'd'
             break
+        case 'Enter':
+            for (let i = 0; i < minigames.length; i++){
+                const minigame = minigames[i]
+                if (TestCollision({o1 : player, o2 : {...minigame, position : {x: minigame.position.x - player.velocity, y: minigame.position.y}}})){
+                    window.myVariable = 'Hello, world!';
+                    window.location.href = `./${minigame.type}.html?money=${money}&xp=${xp}&place=${current_place}&x=${background.position.x}&y=${background.position.y}&last_posx=${infos.town.last_pos.x}&last_posy=${infos.town.last_pos.y}`
+                    break
+                }
+            }
     }
 })
 

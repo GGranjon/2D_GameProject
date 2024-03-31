@@ -1,0 +1,18 @@
+body{
+    background-color: black;
+    width: 100%;
+    height: 100%;
+    margin:0;
+}
+
+.canvas_contain{
+    text-align:center;
+}
+
+canvas {
+   display: inline;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
